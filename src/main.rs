@@ -1,14 +1,16 @@
 use std::{
     time,
-    thread, 
-    fs, 
-    process, 
-    str, 
+    thread,
+    fs,
+    process,
+    str,
     io::{prelude::*, BufReader},
     path::Path,
     ops,
+    env,
 };
 
+use exitcode;
 use chrono::{prelude::*, Local, DateTime};
 
 
@@ -99,7 +101,7 @@ impl Job {
                 },
             }
         }
-        
+
         if job.command.trim().is_empty() {
             return Err(String::from("Failed to create job with empty command"));
         }
@@ -114,7 +116,7 @@ impl Job {
             Some(val) => val,
             None => Local::now(),
         };
-        
+
         if let Some(month) = &self.month_filter {
             if month.contains(&local_time.month()) {
                 return false;
@@ -200,16 +202,16 @@ fn parse_to_list(string: &str, range: ops::Range<u32>) -> Result<Vec<u32>, Strin
                 };
             }
 
-            if !range.contains(&current_range.start) 
+            if !range.contains(&current_range.start)
                     || !range.contains(&current_range.end) {
-                return Err(format!("Requested range [{}, {}] is not in the expected range [{}, {}[", 
-                    current_range.start, 
-                    current_range.end, 
-                    range.start, 
+                return Err(format!("Requested range [{}, {}] is not in the expected range [{}, {}[",
+                    current_range.start,
+                    current_range.end,
+                    range.start,
                     range.end)
                 );
             }
-            
+
             for i in current_range {
                 values.push(i);
             }
@@ -222,8 +224,8 @@ fn parse_to_list(string: &str, range: ops::Range<u32>) -> Result<Vec<u32>, Strin
                 ),
             };
             if !range.contains(&value) {
-                return Err(format!("Value {value} is not in the expected range [{}, {}[", 
-                    range.start, 
+                return Err(format!("Value {value} is not in the expected range [{}, {}[",
+                    range.start,
                     range.end)
                 );
             }
@@ -246,9 +248,25 @@ fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
 
 
 fn main() {
-    let lines = lines_from_file("config/crontab");
+    let args: Vec<String> = env::args().collect();
+
+    let file_name;
+
+    match args.len() {
+        1 => {
+            println!("Pass a filename as argument: docker-cron <filename>");
+            process::exit(exitcode::USAGE);
+        },
+        2 => file_name = Path::new(&args[1]),
+        _ => {
+            println!("More than one argument is not allowed. Usage: docker-cron <filename>");
+            process::exit(exitcode::USAGE);
+        },
+    }
+
+    let lines = lines_from_file(file_name);
     let mut jobs: Vec<Job> = Vec::new();
-    
+
     for line in lines {
         let job = match Job::from_string(&line) {
             Ok(val) => val,
@@ -264,7 +282,7 @@ fn main() {
     loop {
         thread::sleep(time::Duration::from_secs(60));
         let time = Local::now();
-                
+
         for job in &jobs {
             if job.check_time(Some(time)) {
                 job.run();
