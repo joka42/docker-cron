@@ -86,8 +86,14 @@ impl Job {
                     if val == "*" {
                         None
                     } else {
-                        match parse_to_list(val, 1..8) {
-                            Ok(val) => Some(val),
+                        match parse_to_list(val, 0..8) {
+                            Ok(val) => {
+                                let mut values = val.clone();
+                                if values.contains(&0) {
+                                    values.push(7);
+                                }
+                                Some(values)
+                            },
                             Err(e) => return Err(e),
                         }
                     }
@@ -268,13 +274,21 @@ fn main() {
     let mut jobs: Vec<Job> = Vec::new();
 
     for line in lines {
-        let job = match Job::from_string(&line) {
+        let command_line;
+        if let Some(index) = line.find("#") {
+            command_line = &line[..index];
+        } else {
+            command_line = &line;
+        }
+
+        let job = match Job::from_string(command_line) {
             Ok(val) => val,
             Err(e) => {
                 println!("Failed to create job: {}", e);
                 continue;
             },
         };
+
         println!("Added {:?}", job);
         jobs.push(job);
     }
