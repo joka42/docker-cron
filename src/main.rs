@@ -124,31 +124,31 @@ impl Job {
         };
 
         if let Some(month) = &self.month_filter {
-            if month.contains(&local_time.month()) {
+            if !month.contains(&local_time.month()) {
                 return false;
             }
         }
 
         if let Some(day_of_month) = &self.day_of_month_filter {
-            if day_of_month.contains(&local_time.day()) {
+            if !day_of_month.contains(&local_time.day()) {
                 return false;
             }
         }
 
         if let Some(day_of_week) = &self.day_of_week_filter {
-            if day_of_week.contains(&(local_time.weekday().num_days_from_monday() + 1)) {
+            if !day_of_week.contains(&(local_time.weekday().num_days_from_monday() + 1)) {
                 return false;
             }
         }
 
         if let Some(hour) = &self.hour_filter {
-            if hour.contains(&local_time.hour()) {
+            if !hour.contains(&local_time.hour()) {
                 return false;
             }
         }
 
         if let Some(minute) = &self.minute_filter {
-            if minute.contains(&local_time.minute()) {
+            if !minute.contains(&local_time.minute()) {
                 return false;
             }
         }
@@ -263,7 +263,10 @@ fn main() {
             println!("Pass a filename as argument: docker-cron <filename>");
             process::exit(exitcode::USAGE);
         },
-        2 => file_name = Path::new(&args[1]),
+        2 => {
+            file_name = Path::new(&args[1]);
+            println!("Using filename {}", &args[1]);
+        },
         _ => {
             println!("More than one argument is not allowed. Usage: docker-cron <filename>");
             process::exit(exitcode::USAGE);
