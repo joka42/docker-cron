@@ -297,7 +297,6 @@ fn main() {
     }
 
     loop {
-        thread::sleep(time::Duration::from_secs(60));
         let time = Local::now();
 
         for job in &jobs {
@@ -305,5 +304,7 @@ fn main() {
                 job.run();
             }
         }
+
+        thread::sleep(time::Duration::from_secs(60));
     }
 }
