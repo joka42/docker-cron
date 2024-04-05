@@ -14,12 +14,12 @@ This program let's you schedule bash commands using a crontab file.
 ## Restrictions
 
  * Only one file file as argument is read as cli-argument
- * Environment variable cannot be specified in the crontab file
+ * Environment variables cannot be specified in the crontab file
  * Crontab syntax errors are not tested extensively
  * Time is inefficiently checked every 60 s
     * Might lead to skipped minutes if the program is started close to a minute switch
     * Process wakes up every minute unnecessarily
-    * Feel free to contribute a improvement with dynamic sleep cycles 🙂
+    * Feel free to contribute an improvement with dynamic sleep cycles 🙂
 
 ## Contributing
 
