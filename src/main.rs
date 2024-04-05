@@ -98,12 +98,12 @@ impl Job {
                         }
                     }
                 },
-                5 => {
-                    job.command.push_str(val);
-                },
                 _ => {
-                    job.command.push_str(" ");
-                    job.command.push_str(val);
+                    if job.command.is_empty() {
+                        job.command.push_str(val);
+                    } else {
+                        job.command.push_str(&format!(" {}", val));
+                    }
                 },
             }
         }
