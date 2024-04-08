@@ -2,6 +2,16 @@
 
 This program let's you schedule bash commands using a crontab file.
 
+The use case is for docker container running tasks in a scheduled manner. Cron has some caveats that are undesirable in docker containers:
+
+* The environment variables set in docker-compose or cli are not present
+for cron jobs.
+* PATH is not set as expected
+* You might not want to deal with user permissions for each job
+* You want to place the crontab files at a convenient location without
+installing them
+
+
 ## Features
 
  * Crontab syntax
