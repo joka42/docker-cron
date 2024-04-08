@@ -286,7 +286,7 @@ fn parse_to_list(string: &str, range: &ops::Range<u32>) -> Result<Vec<u32>, Stri
         }
     }
 
-    return Ok(values);
+    Ok(values)
 }
 
 
