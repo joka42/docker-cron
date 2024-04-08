@@ -1,2 +1,3 @@
 * * *    * * echo "Hello, World!"
-1,2,3,4-23,22,59   2 * * * echo "Hello, World!!!!"
+1,2,3,4-23/2,22,59   2 * * * echo "Hello, World!!!!"
+*/4,5 * * * * echo "Hello, Worldxx"

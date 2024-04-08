@@ -46,7 +46,7 @@ impl Job {
                     if val == "*" {
                         None
                     } else {
-                        match parse_to_list(val, 0..60) {
+                        match parse_to_list(val, &(0..60)) {
                             Ok(val) => Some(val),
                             Err(e) => return Err(e),
                         }
@@ -56,7 +56,7 @@ impl Job {
                     if val == "*" {
                         None
                     } else {
-                        match parse_to_list(val, 0..24) {
+                        match parse_to_list(val, &(0..24)) {
                             Ok(val) => Some(val),
                             Err(e) => return Err(e),
                         }
@@ -66,7 +66,7 @@ impl Job {
                     if val == "*" {
                         None
                     } else {
-                        match parse_to_list(val, 1..32) {
+                        match parse_to_list(val, &(1..32)) {
                             Ok(val) => Some(val),
                             Err(e) => return Err(e),
                         }
@@ -76,7 +76,7 @@ impl Job {
                     if val == "*" {
                         None
                     } else {
-                        match parse_to_list(val, 1..13) {
+                        match parse_to_list(val, &(1..13)) {
                             Ok(val) => Some(val),
                             Err(e) => return Err(e),
                         }
@@ -86,7 +86,7 @@ impl Job {
                     if val == "*" {
                         None
                     } else {
-                        match parse_to_list(val, 0..8) {
+                        match parse_to_list(val, &(0..8)) {
                             Ok(val) => {
                                 let mut values = val.clone();
                                 if values.contains(&0) {
@@ -136,7 +136,8 @@ impl Job {
         }
 
         if let Some(day_of_week) = &self.day_of_week_filter {
-            if !day_of_week.contains(&(local_time.weekday().num_days_from_monday() + 1)) {
+            if !day_of_week.contains(
+                &(local_time.weekday().num_days_from_monday() + 1)) {
                 return false;
             }
         }
@@ -168,59 +169,104 @@ impl Job {
     }
 }
 
+fn parse_range(section: &str, range: &ops::Range<u32>) -> Result<Vec<u32>, String> {
+    let Some(range_delimiter_index) =  section.find("-") else {
+       return Err(format!("No delimiter '-' found in {section}"));
+    };
 
-fn parse_to_list(string: &str, range: ops::Range<u32>) -> Result<Vec<u32>, String> {
+    let mut current_range = range.clone();
+
+    if range_delimiter_index == 0 {
+        current_range.start = match section[range_delimiter_index + 1..].parse() {
+            Ok(val) => val,
+            Err(e) => return Err(format!(
+                "Failed to parse range section {section}: {}", 
+                e.to_string())
+            ),
+        }
+    } else if range_delimiter_index == section.len() - 1 {
+        current_range.end = match section[..range_delimiter_index].parse() {
+            Ok(val) => val,
+            Err(e) => return Err(format!(
+                "Failed to parse range section {section}: {}", 
+                e.to_string())
+            ),
+        };
+    } else {
+        current_range.start = match section[..range_delimiter_index].parse() {
+            Ok(val) => val,
+            Err(e) => return Err(format!(
+                "Failed to parse range section {section}: {}", 
+                e.to_string())
+            ),
+        };
+
+        current_range.end = match section[range_delimiter_index + 1..].parse() {
+            Ok(val) => val,
+            Err(e) => return Err(format!(
+                "Failed to parse range section {section}: {}",
+                e.to_string())
+            ),
+        };
+    }
+
+    if !range.contains(&current_range.start)
+            || !range.contains(&current_range.end) {
+        return Err(format!(
+            "Requested range [{}, {}] is not in the expected range [{}, {}[",
+            current_range.start,
+            current_range.end,
+            range.start,
+            range.end)
+        );
+    }
+
+    Ok(current_range.collect())
+}
+
+
+fn parse_to_list(string: &str, range: &ops::Range<u32>) -> Result<Vec<u32>, String> {
     let mut values: Vec<u32> = Vec::new();
 
     let parts = string.split(",");
 
     for section in parts {
-        if let Some(range_delimiter_index) =  section.find("-") {
-            let mut current_range = range.clone();
+        let mut modulator: Option<usize> = None;
+        let mut section_span = &section[..];
+        if let Some(modulator_index) = section.find("/"){
+            section_span = &section[..modulator_index];
+            modulator = match section[modulator_index+1..].parse() {
+                Ok(res) => Some(res),
+                Err(_) => return Err(
+                    format!("failed to extract modulator after '/' in {section}")),
+            };
+        }
 
-            if range_delimiter_index == 0 {
-                current_range.start = match section[range_delimiter_index + 1..].parse() {
-                    Ok(val) => val,
-                    Err(e) => return Err(
-                        format!("Failed to parse range section {section}: {}", e.to_string())
-                    ),
-                }
-            } else if range_delimiter_index == section.len() - 1 {
-                current_range.end = match section[..range_delimiter_index].parse() {
-                    Ok(val) => val,
-                    Err(e) => return Err(
-                        format!("Failed to parse range section {section}: {}", e.to_string())
-                    ),
-                };
-            } else {
-                current_range.start = match section[..range_delimiter_index].parse() {
-                    Ok(val) => val,
-                    Err(e) => return Err(
-                        format!("Failed to parse range section {section}: {}", e.to_string())
-                    ),
-                };
+        if section_span.contains("-") {
+            let mut section_values = parse_range(section_span, &range)?;
 
-                current_range.end = match section[range_delimiter_index + 1..].parse() {
-                    Ok(val) => val,
-                    Err(e) => return Err(
-                        format!("Failed to parse range section {section}: {}", e.to_string())
-                    ),
-                };
+            if let Some(step_size) = modulator {
+                section_values = section_values.iter()
+                    .skip(step_size-1)
+                    .step_by(step_size)
+                    .copied()
+                    .collect();
             }
+            
+            values.append(&mut section_values);
 
-            if !range.contains(&current_range.start)
-                    || !range.contains(&current_range.end) {
-                return Err(format!("Requested range [{}, {}] is not in the expected range [{}, {}[",
-                    current_range.start,
-                    current_range.end,
-                    range.start,
-                    range.end)
-                );
-            }
+        } else if section_span == "*" {
+            let mut section_values: Vec<u32> = range.clone().collect();
 
-            for i in current_range {
-                values.push(i);
+            if let Some(step_size) = modulator {
+                section_values = section_values.iter()
+                    .skip(step_size-1)
+                    .step_by(step_size)
+                    .copied()
+                    .collect();
             }
+            
+            values.append(&mut section_values);
 
         } else {
             let value: u32 = match section.parse() {
