@@ -1,27 +1,36 @@
-# Docker-Cron
+# Docker-Cron: Simplified Task Scheduling in Docker
 
-This program let's you schedule bash commands using a crontab file.
-
-The use case is for docker container running tasks in a scheduled manner. Cron has some caveats that are undesirable in docker containers:
-
-* The environment variables set in docker-compose or cli are not present
-for cron jobs.
-* PATH is not set as expected
-* You might not want to deal with user permissions for each job
-* You want to place the crontab files at a convenient location without
-installing them
+Docker-Cron is a streamlined tool designed to facilitate the scheduling of bash commands within Docker containers. Tailored for environments where traditional cron's complexities and limitations become apparent, Docker-Cron offers a simplified, more docker-centric approach to task automation.
 
 
-## Features
+build a stand-alone binary:
+```bash
+cargo build [--release]
+```
 
- * Crontab syntax
-   * Respects comments starting with `#`
-   * You can combine ranges and single entries 1,2-4,7 -> 1,2,3,4,7
-   * You can use `/n` to only use the n-th entry in any range: `1-5/2` -> 
-     2,4 or `*/5` -> 4,9,... (for ranges starting at 0 like minutes or hours)
+run:
+```bash
+docker-cron <filename>
+```
 
- * Uses default environment (in contrast to cron)
- * Reports parsing errors at startup
+## Intended Use Case and Features
+
+
+Ideal for Docker containers, Docker-Cron addresses specific challenges, including:
+
+  * Ensuring environment variables set via Docker are accessible to scheduled tasks.
+  
+  * Simplifying the management of job permissions within the isolated Docker ecosystem.
+  
+  * Offering a direct and efficient method to manage and execute scheduled tasks without the overhead of traditional cron.
+
+  * Supports crontab syntax with enhancements for ease of use in Docker environments.
+    * Respects comments starting with `#`
+    * You can combine ranges and single entries 1,2-4,7 -> 1,2,3,4,7
+    * You can use `/n` to only use the n-th entry in any range: `1-5/2` ->  2,4 or `*/5` -> 4,9,... (for ranges starting at 0 like minutes or hours)
+  
+  * Direct execution of tasks leveraging the container's environment, bypassing common cron issues such as PATH discrepancies.
+  * Error reporting at startup to ensure configuration integrity.
 
 ## Restrictions
 
