@@ -11,7 +11,7 @@ use std::{
 };
 
 use exitcode;
-use chrono::{prelude::*, Local, DateTime};
+use chrono::{Local, DateTime, Timelike, Datelike};
 
 
 #[derive(Debug)]
