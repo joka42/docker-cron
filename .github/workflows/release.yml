@@ -21,12 +21,7 @@ jobs:
     - name: Archive Release Binary
       run: zip -j docker-cron.zip target/release/docker-cron
     - name: Upload Release Binary
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./docker-cron.zip
-        asset_name: docker-cron.zip
-        asset_content_type: application/zip
-
+        files: docker-cron.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
