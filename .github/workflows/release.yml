@@ -19,7 +19,7 @@ jobs:
     - name: Strip the binary
       run: strip target/release/docker-cron
     - name: Archive Release Binary
-      run: zip -j myapp.zip target/release/docker-cron
+      run: zip -j docker-cron.zip target/release/docker-cron
     - name: Upload Release Binary
       uses: actions/upload-release-asset@v1
       env:
